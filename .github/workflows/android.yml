@@ -46,7 +46,7 @@ jobs:
       - name: Build Android APK (Release & Debug)
         shell: bash
         run: |
-          ./build_android.sh -Configuration Release -Abi arm -NdkVersion "26.1.10909125" -AndroidNdkRoot "$ANDROID_HOME/ndk/26.1.10909125" -AndroidSdkRoot "$ANDROID_HOME"
+          ./build_android.sh -Configuration Release -Abi arm
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4

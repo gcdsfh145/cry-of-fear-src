@@ -56,6 +56,17 @@ if [ -z "$ANDROID_NDK_ROOT" ]; then
 fi
 
 if [ ! -d "$ANDROID_NDK_ROOT" ]; then
+    if [ -d "$ANDROID_SDK_ROOT/ndk" ]; then
+        LATEST_NDK=$(ls -1 "$ANDROID_SDK_ROOT/ndk" | sort -V -r | head -n 1)
+        if [ -n "$LATEST_NDK" ]; then
+            NDK_VERSION="$LATEST_NDK"
+            ANDROID_NDK_ROOT="$ANDROID_SDK_ROOT/ndk/$NDK_VERSION"
+            echo "Requested NDK not found. Using latest found NDK: $NDK_VERSION"
+        fi
+    fi
+fi
+
+if [ ! -d "$ANDROID_NDK_ROOT" ]; then
     echo "Error: Android NDK not found at $ANDROID_NDK_ROOT"
     exit 1
 fi
