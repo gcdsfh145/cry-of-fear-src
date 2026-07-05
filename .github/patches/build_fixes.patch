@@ -1,40 +1,54 @@
-diff --git a/src/cof/cl_dll/cl_dll.h b/src/cof/cl_dll/cl_dll.h
-index dcfb433..91035bf 100644
---- a/src/cof/cl_dll/cl_dll.h
-+++ b/src/cof/cl_dll/cl_dll.h
-@@ -28,6 +28,15 @@
- #pragma once
- #if !defined(CL_DLL_H)
- #define CL_DLL_H
-+#ifdef __cplusplus
-+#include <stdint.h>
-+namespace std {
-+    using ::intmax_t;
-+    using ::uintmax_t;
-+}
-+#else
-+#include <stdint.h>
+diff --git a/src/cof/cl_dll/cdll_int.cpp b/src/cof/cl_dll/cdll_int.cpp
+index a76e4d6..fe6fa78 100644
+--- a/src/cof/cl_dll/cdll_int.cpp
++++ b/src/cof/cl_dll/cdll_int.cpp
+@@ -274,7 +274,9 @@ int DLLEXPORT HUD_VidInit( void )
+ #elif USE_VGUI
+ 	VGui_Startup();
+ #endif
++#if USE_VGUI
+ 	COF_Inventory_VidInit();
 +#endif
- #include "build.h"
- typedef unsigned char byte;
- typedef unsigned short word;
-diff --git a/src/cof/dlls/extdll.h b/src/cof/dlls/extdll.h
-index 6b55f76..8d80605 100644
---- a/src/cof/dlls/extdll.h
-+++ b/src/cof/dlls/extdll.h
-@@ -15,6 +15,15 @@
- #pragma once
- #if !defined(EXTDLL_H)
- #define EXTDLL_H
-+#ifdef __cplusplus
-+#include <stdint.h>
-+namespace std {
-+    using ::intmax_t;
-+    using ::uintmax_t;
-+}
-+#else
-+#include <stdint.h>
+ 	return 1;
+ }
+ 
+@@ -309,7 +311,9 @@ redraw the HUD.
+ int DLLEXPORT HUD_Redraw( float time, int intermission )
+ {
+ 	gHUD.Redraw( time, intermission );
++#if USE_VGUI
+ 	COF_Inventory_Draw( time );
 +#endif
- #include "build.h"
- //
- // Global header file for extension DLLs
+ 
+ 	return 1;
+ }
+diff --git a/src/cof/dlls/cof_ladder_manager.cpp b/src/cof/dlls/cof_ladder_manager.cpp
+index ddbcf6e..7c870fd 100644
+--- a/src/cof/dlls/cof_ladder_manager.cpp
++++ b/src/cof/dlls/cof_ladder_manager.cpp
+@@ -175,7 +175,8 @@ void CCOFLadderManager::Spawn( void )
+ 
+ BOOL CCOFLadderManager::HasModel( void ) const
+ {
+-	return !FStringNull( pev->model ) && STRING( pev->model )[0] != '\0';
++	const char *pModel = STRING( pev->model );
++	return !FStringNull( pev->model ) && pModel && pModel[0] != '\0';
+ }
+ 
+ void CCOFLadderManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+diff --git a/src/cof/dlls/cof_utils.h b/src/cof/dlls/cof_utils.h
+index 3b0adf0..a79a320 100644
+--- a/src/cof/dlls/cof_utils.h
++++ b/src/cof/dlls/cof_utils.h
+@@ -14,7 +14,10 @@
+ 
+ inline BOOL COF_HasText( string_t iszText )
+ {
+-	return !FStringNull( iszText ) && STRING( iszText )[0] != '\0';
++	if (FStringNull( iszText ))
++		return FALSE;
++	const char *pszText = STRING( iszText );
++	return pszText && pszText[0] != '\0';
+ }
+ 
+ inline CBasePlayer *COF_PlayerFromEntity( CBaseEntity *pEntity )
