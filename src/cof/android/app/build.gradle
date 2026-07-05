@@ -5,16 +5,17 @@ import java.time.temporal.ChronoUnit
 apply plugin: 'com.android.application'
 
 android {
-    ndkVersion '26.1.10909125'
+    ndkVersion '29.0.14206865'
     namespace 'com.example.hlsdk'
+    compileSdk 36
+    buildToolsVersion '36'
 
     defaultConfig {
         applicationId 'com.example.hlsdk'
         versionName '1.0'
         versionCode getBuildNum()
-        minSdkVersion 3
+        minSdkVersion 23
         targetSdk 34
-        compileSdk 34
 
         externalNativeBuild {
             cmake {
@@ -31,8 +32,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
 
     buildTypes {
@@ -40,12 +41,12 @@ android {
             minifyEnabled false
             shrinkResources false
             debuggable true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
         }
         release {
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.txt'
         }
     }
 
