@@ -1,28 +1,95 @@
-diff --git a/src/cof/cl_dll/cl_dll.h b/src/cof/cl_dll/cl_dll.h
-index dcfb433..aa1aed5 100644
---- a/src/cof/cl_dll/cl_dll.h
-+++ b/src/cof/cl_dll/cl_dll.h
-@@ -29,6 +29,9 @@
- #if !defined(CL_DLL_H)
- #define CL_DLL_H
- #include "build.h"
-+#ifdef __cplusplus
-+#include <cstdint>
+diff --git a/src/cof/android/build.gradle b/src/cof/android/build.gradle
+index 61060cd..87a3864 100644
+--- a/src/cof/android/build.gradle
++++ b/src/cof/android/build.gradle
+@@ -5,7 +5,7 @@ buildscript {
+ 	}
+ 
+ 	dependencies {
+-		classpath 'com.android.tools.build:gradle:8.2.0'
++		classpath 'com.android.tools.build:gradle:9.1.0'
+     }
+ }
+ 
+diff --git a/src/cof/android/gradle/wrapper/gradle-wrapper.properties b/src/cof/android/gradle/wrapper/gradle-wrapper.properties
+index 6165666..0000cf2 100644
+--- a/src/cof/android/gradle/wrapper/gradle-wrapper.properties
++++ b/src/cof/android/gradle/wrapper/gradle-wrapper.properties
+@@ -1,6 +1,6 @@
+ #Thu Dec 28 14:36:02 EET 2023
+ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-9.5.1-bin.zip
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+diff --git a/src/cof/cl_dll/cdll_int.cpp b/src/cof/cl_dll/cdll_int.cpp
+index a76e4d6..fe6fa78 100644
+--- a/src/cof/cl_dll/cdll_int.cpp
++++ b/src/cof/cl_dll/cdll_int.cpp
+@@ -274,7 +274,9 @@ int DLLEXPORT HUD_VidInit( void )
+ #elif USE_VGUI
+ 	VGui_Startup();
+ #endif
++#if USE_VGUI
+ 	COF_Inventory_VidInit();
 +#endif
- typedef unsigned char byte;
- typedef unsigned short word;
- typedef float vec_t;
-diff --git a/src/cof/dlls/extdll.h b/src/cof/dlls/extdll.h
-index 6b55f76..bae00b2 100644
---- a/src/cof/dlls/extdll.h
-+++ b/src/cof/dlls/extdll.h
-@@ -16,6 +16,9 @@
- #if !defined(EXTDLL_H)
- #define EXTDLL_H
- #include "build.h"
-+#ifdef __cplusplus
-+#include <cstdint>
+ 	return 1;
+ }
+ 
+@@ -309,7 +311,9 @@ redraw the HUD.
+ int DLLEXPORT HUD_Redraw( float time, int intermission )
+ {
+ 	gHUD.Redraw( time, intermission );
++#if USE_VGUI
+ 	COF_Inventory_Draw( time );
 +#endif
- //
- // Global header file for extension DLLs
- //
+ 
+ 	return 1;
+ }
+diff --git a/src/cof/dlls/cof_ladder_manager.cpp b/src/cof/dlls/cof_ladder_manager.cpp
+index ddbcf6e..7c870fd 100644
+--- a/src/cof/dlls/cof_ladder_manager.cpp
++++ b/src/cof/dlls/cof_ladder_manager.cpp
+@@ -175,7 +175,8 @@ void CCOFLadderManager::Spawn( void )
+ 
+ BOOL CCOFLadderManager::HasModel( void ) const
+ {
+-	return !FStringNull( pev->model ) && STRING( pev->model )[0] != '\0';
++	const char *pModel = STRING( pev->model );
++	return !FStringNull( pev->model ) && pModel && pModel[0] != '\0';
+ }
+ 
+ void CCOFLadderManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+diff --git a/src/cof/dlls/cof_utils.h b/src/cof/dlls/cof_utils.h
+index 3b0adf0..a79a320 100644
+--- a/src/cof/dlls/cof_utils.h
++++ b/src/cof/dlls/cof_utils.h
+@@ -14,7 +14,10 @@
+ 
+ inline BOOL COF_HasText( string_t iszText )
+ {
+-	return !FStringNull( iszText ) && STRING( iszText )[0] != '\0';
++	if (FStringNull( iszText ))
++		return FALSE;
++	const char *pszText = STRING( iszText );
++	return pszText && pszText[0] != '\0';
+ }
+ 
+ inline CBasePlayer *COF_PlayerFromEntity( CBaseEntity *pEntity )
+diff --git a/src/cof/wscript b/src/cof/wscript
+index c49a327..452d99d 100644
+--- a/src/cof/wscript
++++ b/src/cof/wscript
+@@ -263,6 +263,11 @@ def configure(conf):
+ 		pass
+ 	else:
+ 		conf.env.append_unique('CXXFLAGS', ['-Wno-invalid-offsetof', '-fno-exceptions'])
++
++	conf.env.append_value('CFLAGS', ['-D_LIBCPP_HAS_MUSL_LIBC', '-D__STDC_LIMIT_MACROS', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
++	conf.env.append_value('CXXFLAGS', ['-D_LIBCPP_HAS_MUSL_LIBC', '-D__STDC_LIMIT_MACROS', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
++
++	if conf.env.COMPILER_CC != 'msvc':
+ 		conf.define('stricmp', 'strcasecmp', quote=False)
+ 		conf.define('strnicmp', 'strncasecmp', quote=False)
+ 		conf.define('_snprintf', 'snprintf', quote=False)
