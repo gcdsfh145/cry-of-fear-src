@@ -43,19 +43,10 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Setup Android NDK
-        id: setup-ndk
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: '29.0.14206865'
-          link-to-sdk: true
-
       - name: Build Android APK (Release & Debug)
         shell: pwsh
         run: |
-          # Dynamically update the NDK version in gradle files
-          find . -name "build.gradle" -exec sed -i 's/26\.1\.10909125/29.0.14206865/g' {} +
-          ./build_android.sh -Configuration Release -Abi arm -NdkVersion "29.0.14206865" -AndroidNdkRoot "${{ steps.setup-ndk.outputs.ndk-path }}" -AndroidSdkRoot "$ANDROID_HOME"
+          ./build_android.sh -Configuration Release -Abi arm -NdkVersion "26.1.10909125" -AndroidNdkRoot "$ANDROID_HOME/ndk/26.1.10909125" -AndroidSdkRoot "$ANDROID_HOME"
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4

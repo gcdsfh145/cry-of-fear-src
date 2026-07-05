@@ -15,7 +15,7 @@ echo "[2/3] Building Game Libraries (Linux)..."
 
 echo ""
 echo "[3/3] Building Android APK..."
-./build_android.sh -Configuration Release -Abi all -NdkVersion "29.0.14206865"
+./build_android.sh -Configuration Release -Abi all -NdkVersion "26.1.10909125"
 
 echo ""
 echo "======================================"
