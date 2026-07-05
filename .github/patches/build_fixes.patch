@@ -1,0 +1,64 @@
+diff --git a/scripts/lib/android-build.ps1 b/scripts/lib/android-build.ps1
+index 804cde1..61b23f2 100644
+--- a/scripts/lib/android-build.ps1
++++ b/scripts/lib/android-build.ps1
+@@ -429,6 +429,10 @@ function Invoke-CofAndroidWafBuild {
+         throw "Cannot find CoF waf entrypoint in $SourceDir."
+     }
+ 
++    if (-not (Test-RunningOnWindows)) {
++        Invoke-Checked -FilePath "chmod" -ArgumentList @("+x", $waf)
++    }
++
+     $wafBuildType = Convert-CmakeConfigurationToWafBuildType -Configuration $Configuration
+     $abiBuildDir = Join-Path $BuildDir $Abi
+     $oldAndroidNdk = [Environment]::GetEnvironmentVariable("ANDROID_NDK")
+@@ -526,6 +530,10 @@ function Invoke-CofAndroidGradleBuild {
+         throw "Cannot find Gradle wrapper in $ProjectDir."
+     }
+ 
++    if (-not (Test-RunningOnWindows)) {
++        Invoke-Checked -FilePath "chmod" -ArgumentList @("+x", $gradle)
++    }
++
+     $oldAndroidHome = [Environment]::GetEnvironmentVariable("ANDROID_HOME")
+     $oldAndroidSdkRoot = [Environment]::GetEnvironmentVariable("ANDROID_SDK_ROOT")
+ 
+diff --git a/src/cof/cl_dll/cdll_int.cpp b/src/cof/cl_dll/cdll_int.cpp
+index a76e4d6..fe6fa78 100644
+--- a/src/cof/cl_dll/cdll_int.cpp
++++ b/src/cof/cl_dll/cdll_int.cpp
+@@ -274,7 +274,9 @@ int DLLEXPORT HUD_VidInit( void )
+ #elif USE_VGUI
+ 	VGui_Startup();
+ #endif
++#if USE_VGUI
+ 	COF_Inventory_VidInit();
++#endif
+ 	return 1;
+ }
+ 
+@@ -309,7 +311,9 @@ redraw the HUD.
+ int DLLEXPORT HUD_Redraw( float time, int intermission )
+ {
+ 	gHUD.Redraw( time, intermission );
++#if USE_VGUI
+ 	COF_Inventory_Draw( time );
++#endif
+ 
+ 	return 1;
+ }
+diff --git a/src/cof/dlls/cof_ladder_manager.cpp b/src/cof/dlls/cof_ladder_manager.cpp
+index ddbcf6e..7c870fd 100644
+--- a/src/cof/dlls/cof_ladder_manager.cpp
++++ b/src/cof/dlls/cof_ladder_manager.cpp
+@@ -175,7 +175,8 @@ void CCOFLadderManager::Spawn( void )
+ 
+ BOOL CCOFLadderManager::HasModel( void ) const
+ {
+-	return !FStringNull( pev->model ) && STRING( pev->model )[0] != '\0';
++	const char *pModel = STRING( pev->model );
++	return !FStringNull( pev->model ) && pModel && pModel[0] != '\0';
+ }
+ 
+ void CCOFLadderManager::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
